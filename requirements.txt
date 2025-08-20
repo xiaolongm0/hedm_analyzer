@@ -1,0 +1,23 @@
+# HEDM X-ray Image Analyzer Requirements
+
+# Core scientific computing
+numpy>=1.20.0
+scipy>=1.7.0
+
+# Image processing
+Pillow>=8.0.0
+scikit-image>=0.18.0
+
+# Data handling
+h5py>=3.0.0
+
+# GUI and visualization
+matplotlib>=3.5.0
+
+# Standard library packages (should be available)
+# tkinter - usually comes with Python
+# threading
+# logging
+# json
+# os
+# sys

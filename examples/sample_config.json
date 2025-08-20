@@ -1,0 +1,41 @@
+{
+  "analysis_parameters": {
+    "threshold": 10.0,
+    "saturation_threshold": 65535,
+    "mask_file": null
+  },
+  "scan_conditions": {
+    "energy_kev": 80.0,
+    "exposure_time_s": 0.5,
+    "beam_current_ma": 100.0,
+    "detector_distance_mm": 900.0,
+    "attenuation_settings": [
+      {
+        "material": "Al",
+        "thickness_mm": 1.0,
+        "description": "Primary aluminum filter"
+      }
+    ]
+  },
+  "rois": [
+    {
+      "name": "center",
+      "x_start": 1200,
+      "y_start": 1200,
+      "x_end": 1680,
+      "y_end": 1680
+    },
+    {
+      "name": "corner",
+      "x_start": 100,
+      "y_start": 100,
+      "x_end": 500,
+      "y_end": 500
+    }
+  ],
+  "export_settings": {
+    "include_histograms": true,
+    "histogram_bins": "auto",
+    "decimal_places": 3
+  }
+}

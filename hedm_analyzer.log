@@ -1,0 +1,49 @@
+2025-08-18 15:02:49,839 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-08-18 15:02:49,892 - __main__ - ERROR - Application error: no display name and no $DISPLAY environment variable
+Traceback (most recent call last):
+  File "/nfs/lambda_stor_01/homes/xma/HEDM_Viz/hedm_analyzer/main.py", line 31, in <module>
+    main()
+  File "/nfs/lambda_stor_01/homes/xma/HEDM_Viz/hedm_analyzer/gui/main_window.py", line 560, in main
+    root = tk.Tk()
+           ^^^^^^^
+  File "/homes/xma/miniconda3/lib/python3.11/tkinter/__init__.py", line 2326, in __init__
+    self.tk = _tkinter.create(screenName, baseName, className, interactive, wantobjects, useTk, sync, use)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_tkinter.TclError: no display name and no $DISPLAY environment variable
+2025-08-19 20:32:04,992 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-08-19 20:32:18,325 - core.data_handler - INFO - Loaded 41 projection images
+2025-08-19 20:32:18,333 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-08-19 20:33:09,193 - core.analysis_engine - INFO - Added ROI 'ROI_1': (527, 920, 2060, 2184)
+2025-08-19 20:33:11,834 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-08-19 20:33:22,851 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-08-19 20:34:00,465 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-08-19 20:34:11,921 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-08-19 20:35:31,935 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-08-19 20:35:53,065 - core.data_handler - INFO - Loaded 41 projection images
+2025-08-19 20:35:53,075 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-08-19 20:36:30,311 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-08-19 20:37:08,321 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-08-19 20:39:34,051 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-08-19 20:39:40,133 - core.data_handler - INFO - Loaded 41 projection images
+2025-08-19 20:39:40,143 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-08-19 20:39:47,792 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-08-19 20:40:18,538 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1065, 770, 1065, 770)
+2025-08-19 20:40:21,054 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1065, 770, 1065, 770)
+2025-08-19 20:40:24,338 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-08-19 20:42:17,407 - core.analysis_engine - INFO - Cleared all ROIs
+2025-08-19 20:42:35,541 - core.analysis_engine - INFO - Added ROI 'ROI_1': (676, 576, 2225, 2244)
+2025-08-19 20:42:39,124 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-08-19 20:43:25,756 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-08-19 20:47:28,546 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-08-19 20:47:39,060 - core.data_handler - INFO - Loaded 41 projection images
+2025-08-19 20:47:39,067 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-08-19 20:49:24,978 - core.analysis_engine - INFO - Added ROI 'ROI_1': (931, 1021, 931, 1024)
+2025-08-19 20:49:25,948 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1084, 950, 1084, 950)
+2025-08-19 20:49:26,781 - core.analysis_engine - INFO - Added ROI 'ROI_1': (613, 736, 2195, 2116)
+2025-08-19 20:49:27,732 - core.analysis_engine - INFO - Added ROI 'ROI_1': (497, 1032, 2446, 2225)
+2025-08-19 20:49:28,715 - core.analysis_engine - INFO - Cleared all ROIs
+2025-08-19 20:49:31,041 - core.analysis_engine - INFO - Added ROI 'ROI_1': (336, 396, 2670, 2416)
+2025-08-19 20:49:32,936 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-08-19 20:50:31,658 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-08-19 20:52:01,235 - core.analysis_engine - INFO - Cleared all ROIs
+2025-08-19 20:52:13,924 - core.analysis_engine - INFO - Added ROI 'ROI_1': (157, 433, 2030, 2255)
