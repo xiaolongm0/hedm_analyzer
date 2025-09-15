@@ -14,14 +14,6 @@ class AttenuationSettings:
     material: str
     thickness_mm: float
     description: str = ""
-    
-    def to_dict(self) -> dict:
-        """Convert to dictionary for JSON serialization"""
-        return {
-            'material': self.material,
-            'thickness_mm': self.thickness_mm,
-            'description': self.description
-        }
 
 @dataclass
 class ScanConditions:
@@ -219,7 +211,7 @@ class AttenuationCalculator:
             recommendations.update({
                 'action': 'increase_attenuation',
                 'reasoning': f'Current max ({current_max:.0f}) near saturation. Need {needed_reduction:.1f}x more attenuation',
-                'suggested_filters': [AttenuationSettings('Al', additional_al_thickness, 'Additional filter').to_dict()],
+                'suggested_filters': [AttenuationSettings('Al', additional_al_thickness, 'Additional filter')],
                 'confidence': 'high'
             })
             

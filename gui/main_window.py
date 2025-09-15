@@ -20,19 +20,6 @@ from core.data_handler import DataHandler
 from core.analysis_engine import AnalysisEngine, ROI, Statistics
 from core.attenuation_calc import AttenuationCalculator, ScanConditions, AttenuationSettings
 
-class CustomJSONEncoder(json.JSONEncoder):
-    """Custom JSON encoder to handle non-serializable objects"""
-    def default(self, obj):
-        if hasattr(obj, 'to_dict'):
-            return obj.to_dict()
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        elif isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        return super().default(obj)
-
 class ImageViewer(tk.Frame):
     """Image display widget with ROI selection capabilities"""
     
@@ -43,6 +30,8 @@ class ImageViewer(tk.Frame):
         self.image_scale = 1.0
         self.rois = []
         self.roi_callback = None
+        self.saturation_threshold = 65535  # Default for 16-bit detectors
+        self.highlight_saturated = True
         
         # Create canvas for image display
         self.canvas = tk.Canvas(self, bg='black', width=600, height=600)
@@ -63,7 +52,7 @@ class ImageViewer(tk.Frame):
         
         self.current_image = image_array
         
-        # Convert to 8-bit for display
+        # Convert to RGB for display and highlight saturated pixels
         if image_array.dtype != np.uint8:
             # Use percentile scaling for better visibility
             p_low, p_high = np.percentile(image_array, [1, 99])
@@ -71,8 +60,20 @@ class ImageViewer(tk.Frame):
         else:
             image_scaled = image_array
         
-        # Convert to PIL Image
-        pil_image = Image.fromarray(image_scaled)
+        # Create RGB image for saturation highlighting
+        if self.highlight_saturated:
+            # Find saturated pixels in original image
+            saturated_mask = image_array >= self.saturation_threshold
+            
+            # Convert grayscale to RGB
+            rgb_image = np.stack([image_scaled, image_scaled, image_scaled], axis=-1)
+            
+            # Highlight saturated pixels in red
+            rgb_image[saturated_mask] = [255, 0, 0]  # Pure red
+            
+            pil_image = Image.fromarray(rgb_image)
+        else:
+            pil_image = Image.fromarray(image_scaled)
         
         # Scale to fit canvas
         canvas_width = self.canvas.winfo_width()
@@ -175,6 +176,20 @@ class ImageViewer(tk.Frame):
         """Set callback function for ROI selection"""
         self.roi_callback = callback
     
+    def set_saturation_threshold(self, threshold):
+        """Set saturation threshold for highlighting"""
+        self.saturation_threshold = threshold
+        # Refresh display if image is loaded
+        if self.current_image is not None:
+            self.set_image(self.current_image)
+    
+    def set_saturation_highlighting(self, enabled):
+        """Enable/disable saturation highlighting"""
+        self.highlight_saturated = enabled
+        # Refresh display if image is loaded
+        if self.current_image is not None:
+            self.set_image(self.current_image)
+    
     def draw_rois(self):
         """Draw ROI overlays on image"""
         # This would be implemented to show existing ROIs
@@ -243,7 +258,15 @@ class HEDMAnalyzer:
         # Saturation threshold
         ttk.Label(params_frame, text="Saturation Threshold:").pack(anchor=tk.W)
         self.sat_threshold_var = tk.StringVar(value="65535")
-        ttk.Entry(params_frame, textvariable=self.sat_threshold_var).pack(fill=tk.X, pady=2)
+        sat_entry = ttk.Entry(params_frame, textvariable=self.sat_threshold_var)
+        sat_entry.pack(fill=tk.X, pady=2)
+        sat_entry.bind('<KeyRelease>', self.on_saturation_threshold_change)
+        
+        # Saturation highlighting toggle
+        self.highlight_saturation_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(params_frame, text="Highlight Saturated Pixels (Red)", 
+                       variable=self.highlight_saturation_var,
+                       command=self.on_highlight_toggle).pack(anchor=tk.W, pady=2)
         
         # Mask file
         ttk.Label(params_frame, text="Mask File (optional):").pack(anchor=tk.W)
@@ -317,6 +340,10 @@ class HEDMAnalyzer:
         self.frame_label.pack(side=tk.LEFT, padx=10)
         ttk.Button(nav_frame, text="Next ▶", command=self.next_frame).pack(side=tk.LEFT)
         
+        # Dynamic range display
+        self.range_label = ttk.Label(nav_frame, text="Range: - / -")
+        self.range_label.pack(side=tk.RIGHT, padx=10)
+        
         # Image viewer
         self.image_viewer = ImageViewer(image_frame)
         self.image_viewer.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
@@ -389,14 +416,40 @@ class HEDMAnalyzer:
         if filename:
             self.mask_file_var.set(filename)
     
+    def on_saturation_threshold_change(self, event=None):
+        """Handle saturation threshold changes"""
+        try:
+            threshold = int(self.sat_threshold_var.get())
+            self.image_viewer.set_saturation_threshold(threshold)
+        except ValueError:
+            pass  # Invalid input, ignore
+    
+    def on_highlight_toggle(self):
+        """Handle saturation highlighting toggle"""
+        enabled = self.highlight_saturation_var.get()
+        self.image_viewer.set_saturation_highlighting(enabled)
+    
     def update_display(self):
         """Update the image display"""
         if self.data_handler.data is not None:
             frame = self.data_handler.get_frame(self.current_frame_idx)
+            
+            # Update saturation threshold in image viewer
+            try:
+                sat_threshold = int(self.sat_threshold_var.get())
+                self.image_viewer.set_saturation_threshold(sat_threshold)
+            except ValueError:
+                pass  # Invalid threshold, keep current value
+            
             self.image_viewer.set_image(frame)
             
             total_frames = self.data_handler.shape[0]
             self.frame_label.config(text=f"Frame: {self.current_frame_idx+1}/{total_frames}")
+            
+            # Update dynamic range display
+            min_val = int(np.min(frame))
+            max_val = int(np.max(frame))
+            self.range_label.config(text=f"Range: {min_val} / {max_val}")
     
     def prev_frame(self):
         """Go to previous frame"""
@@ -507,7 +560,7 @@ class HEDMAnalyzer:
         self.log_message("Analysis complete!")
         
         # Display text results
-        results_text = json.dumps(self.analysis_results, indent=2, cls=CustomJSONEncoder)
+        results_text = json.dumps(self.analysis_results, indent=2)
         self.results_text.delete(1.0, tk.END)
         self.results_text.insert(1.0, results_text)
         
@@ -563,7 +616,7 @@ class HEDMAnalyzer:
         if filename:
             try:
                 with open(filename, 'w') as f:
-                    json.dump(self.analysis_results, f, indent=2, cls=CustomJSONEncoder)
+                    json.dump(self.analysis_results, f, indent=2)
                 self.log_message(f"Results exported to: {filename}")
             except Exception as e:
                 messagebox.showerror("Error", f"Failed to export results: {e}")

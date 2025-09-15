@@ -10,40 +10,58 @@ Traceback (most recent call last):
     self.tk = _tkinter.create(screenName, baseName, className, interactive, wantobjects, useTk, sync, use)
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _tkinter.TclError: no display name and no $DISPLAY environment variable
-2025-08-19 20:32:04,992 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
-2025-08-19 20:32:18,325 - core.data_handler - INFO - Loaded 41 projection images
-2025-08-19 20:32:18,333 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
-2025-08-19 20:33:09,193 - core.analysis_engine - INFO - Added ROI 'ROI_1': (527, 920, 2060, 2184)
-2025-08-19 20:33:11,834 - core.analysis_engine - INFO - Generating comprehensive analysis report...
-2025-08-19 20:33:22,851 - core.analysis_engine - INFO - Generating comprehensive analysis report...
-2025-08-19 20:34:00,465 - core.analysis_engine - INFO - Analysis report generated successfully
-2025-08-19 20:34:11,921 - core.analysis_engine - INFO - Analysis report generated successfully
-2025-08-19 20:35:31,935 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
-2025-08-19 20:35:53,065 - core.data_handler - INFO - Loaded 41 projection images
-2025-08-19 20:35:53,075 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
-2025-08-19 20:36:30,311 - core.analysis_engine - INFO - Generating comprehensive analysis report...
-2025-08-19 20:37:08,321 - core.analysis_engine - INFO - Analysis report generated successfully
-2025-08-19 20:39:34,051 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
-2025-08-19 20:39:40,133 - core.data_handler - INFO - Loaded 41 projection images
-2025-08-19 20:39:40,143 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
-2025-08-19 20:39:47,792 - core.analysis_engine - INFO - Generating comprehensive analysis report...
-2025-08-19 20:40:18,538 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1065, 770, 1065, 770)
-2025-08-19 20:40:21,054 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1065, 770, 1065, 770)
-2025-08-19 20:40:24,338 - core.analysis_engine - INFO - Analysis report generated successfully
-2025-08-19 20:42:17,407 - core.analysis_engine - INFO - Cleared all ROIs
-2025-08-19 20:42:35,541 - core.analysis_engine - INFO - Added ROI 'ROI_1': (676, 576, 2225, 2244)
-2025-08-19 20:42:39,124 - core.analysis_engine - INFO - Generating comprehensive analysis report...
-2025-08-19 20:43:25,756 - core.analysis_engine - INFO - Analysis report generated successfully
-2025-08-19 20:47:28,546 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
-2025-08-19 20:47:39,060 - core.data_handler - INFO - Loaded 41 projection images
-2025-08-19 20:47:39,067 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
-2025-08-19 20:49:24,978 - core.analysis_engine - INFO - Added ROI 'ROI_1': (931, 1021, 931, 1024)
-2025-08-19 20:49:25,948 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1084, 950, 1084, 950)
-2025-08-19 20:49:26,781 - core.analysis_engine - INFO - Added ROI 'ROI_1': (613, 736, 2195, 2116)
-2025-08-19 20:49:27,732 - core.analysis_engine - INFO - Added ROI 'ROI_1': (497, 1032, 2446, 2225)
-2025-08-19 20:49:28,715 - core.analysis_engine - INFO - Cleared all ROIs
-2025-08-19 20:49:31,041 - core.analysis_engine - INFO - Added ROI 'ROI_1': (336, 396, 2670, 2416)
-2025-08-19 20:49:32,936 - core.analysis_engine - INFO - Generating comprehensive analysis report...
-2025-08-19 20:50:31,658 - core.analysis_engine - INFO - Analysis report generated successfully
-2025-08-19 20:52:01,235 - core.analysis_engine - INFO - Cleared all ROIs
-2025-08-19 20:52:13,924 - core.analysis_engine - INFO - Added ROI 'ROI_1': (157, 433, 2030, 2255)
+2025-09-04 13:49:59,149 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-04 13:50:12,440 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-04 13:50:12,450 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-04 13:50:51,220 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-09-04 13:51:28,686 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-09-04 13:51:58,918 - core.analysis_engine - INFO - Added ROI 'ROI_1': (724, 884, 1796, 1872)
+2025-09-04 13:52:10,912 - core.analysis_engine - INFO - Added ROI 'ROI_1': (403, 1019, 1135, 1828)
+2025-09-04 13:52:15,476 - core.analysis_engine - INFO - Cleared all ROIs
+2025-09-04 13:53:07,698 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 34, 0, 34)
+2025-09-04 13:56:38,336 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1238, 0, 1238)
+2025-09-04 13:56:38,946 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 13:56:39,581 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 13:56:39,900 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 13:56:40,064 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 13:56:40,204 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 13:56:40,316 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 13:56:40,466 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 13:56:40,594 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 13:56:40,709 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 13:56:40,842 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 13:56:40,953 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1211, 0, 1211)
+2025-09-04 14:07:36,829 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-04 14:07:48,151 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-04 14:07:48,159 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-04 14:10:08,871 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-04 14:10:18,237 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-04 14:10:18,243 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-04 14:10:31,450 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 0, 0, 0)
+2025-09-04 14:10:34,127 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 0, 0, 0)
+2025-09-04 14:10:37,791 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 0, 0, 0)
+2025-09-04 14:37:02,645 - core.analysis_engine - INFO - Added ROI 'ROI_1': (781, 1412, 781, 1412)
+2025-09-04 14:37:05,327 - core.analysis_engine - INFO - Added ROI 'ROI_1': (781, 1412, 781, 1412)
+2025-09-04 14:37:07,288 - core.analysis_engine - INFO - Cleared all ROIs
+2025-09-04 14:50:38,048 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-09-04 14:51:14,490 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1467, 1110, 1467, 1110)
+2025-09-04 14:51:15,483 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-09-04 14:55:11,676 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1213, 0, 1213)
+2025-09-04 14:55:15,558 - core.analysis_engine - INFO - Added ROI 'ROI_1': (817, 654, 2185, 2400)
+2025-09-08 13:02:50,048 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-08 13:03:03,052 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-08 13:03:03,061 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-08 13:03:16,638 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 1362, 0, 1362)
+2025-09-08 14:38:45,468 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1307, 839, 1307, 843)
+2025-09-09 10:34:57,607 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1216, 1362, 1216, 1362)
+2025-09-09 10:35:04,812 - core.analysis_engine - INFO - Added ROI 'ROI_1': (748, 705, 2198, 2190)
+2025-09-09 10:35:13,471 - core.analysis_engine - INFO - Added ROI 'ROI_1': (233, 221, 2388, 2388)
+2025-09-09 10:35:18,329 - core.analysis_engine - INFO - Cleared all ROIs
+2025-09-09 10:35:20,313 - core.analysis_engine - INFO - Added ROI 'ROI_1': (213, 479, 2523, 2523)
+2025-09-09 10:42:05,118 - core.analysis_engine - INFO - Added ROI 'ROI_1': (558, 713, 558, 713)
+2025-09-15 13:00:32,170 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-15 13:00:54,275 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-15 13:00:54,285 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-15 13:05:34,546 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-15 13:05:40,332 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-15 13:05:40,342 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
