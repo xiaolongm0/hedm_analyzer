@@ -65,3 +65,20 @@ _tkinter.TclError: no display name and no $DISPLAY environment variable
 2025-09-15 13:05:34,546 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
 2025-09-15 13:05:40,332 - core.data_handler - INFO - Loaded 41 projection images
 2025-09-15 13:05:40,342 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-15 15:00:28,321 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-15 15:00:35,169 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-15 15:00:35,185 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-15 15:01:16,741 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-15 15:01:27,196 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-15 15:01:27,204 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-15 15:19:46,150 - core.analysis_engine - INFO - Added ROI 'ROI_1': (2167, 1174, 2167, 1174)
+2025-09-15 15:19:46,666 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1933, 1258, 1933, 1258)
+2025-09-15 15:19:47,483 - core.analysis_engine - INFO - Added ROI 'ROI_1': (1987, 1223, 1987, 1223)
+2025-09-15 15:19:47,836 - core.analysis_engine - INFO - Added ROI 'ROI_1': (2164, 1319, 2164, 1319)
+2025-09-15 15:19:48,289 - core.analysis_engine - INFO - Added ROI 'ROI_1': (2199, 1410, 2199, 1410)
+2025-09-15 15:20:05,916 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 882, 0, 882)
+2025-09-15 15:20:06,304 - core.analysis_engine - INFO - Added ROI 'ROI_1': (0, 968, 0, 968)
+2025-09-15 15:43:27,352 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-15 15:43:33,328 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-15 15:43:33,343 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-15 15:46:12,657 - __main__ - INFO - Starting HEDM X-ray Image Analyzer

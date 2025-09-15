@@ -343,6 +343,10 @@ class HEDMAnalyzer:
         # Dynamic range display
         self.range_label = ttk.Label(nav_frame, text="Range: - / -")
         self.range_label.pack(side=tk.RIGHT, padx=10)
+
+        # Saturated pixels display
+        self.saturation_label = ttk.Label(nav_frame, text="Saturated: - / -")
+        self.saturation_label.pack(side=tk.RIGHT, padx=10)
         
         # Image viewer
         self.image_viewer = ImageViewer(image_frame)
@@ -421,6 +425,8 @@ class HEDMAnalyzer:
         try:
             threshold = int(self.sat_threshold_var.get())
             self.image_viewer.set_saturation_threshold(threshold)
+            # Update saturated pixel display
+            self.update_saturated_pixel_display()
         except ValueError:
             pass  # Invalid input, ignore
     
@@ -428,6 +434,20 @@ class HEDMAnalyzer:
         """Handle saturation highlighting toggle"""
         enabled = self.highlight_saturation_var.get()
         self.image_viewer.set_saturation_highlighting(enabled)
+
+    def update_saturated_pixel_display(self):
+        """Update saturated pixels display based on current frame and threshold"""
+        if self.data_handler.data is not None:
+            try:
+                frame = self.data_handler.get_frame(self.current_frame_idx)
+                sat_threshold = int(self.sat_threshold_var.get())
+                saturated_mask = frame >= sat_threshold
+                saturated_count = int(np.sum(saturated_mask))
+                total_pixels = frame.size
+                saturated_percentage = (saturated_count / total_pixels) * 100
+                self.saturation_label.config(text=f"Saturated: {saturated_count} ({saturated_percentage:.2f}%)")
+            except (ValueError, IndexError):
+                self.saturation_label.config(text="Saturated: - / -")
     
     def update_display(self):
         """Update the image display"""
@@ -450,6 +470,9 @@ class HEDMAnalyzer:
             min_val = int(np.min(frame))
             max_val = int(np.max(frame))
             self.range_label.config(text=f"Range: {min_val} / {max_val}")
+
+            # Update saturated pixels display
+            self.update_saturated_pixel_display()
     
     def prev_frame(self):
         """Go to previous frame"""
