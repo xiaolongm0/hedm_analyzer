@@ -2,6 +2,8 @@
 
 A comprehensive Python application for analyzing High Energy Diffraction Microscopy (HEDM) X-ray detector data with statistical analysis, ROI management, and scan parameter optimization.
 
+![GUI](./figs/gui_screen.png)
+
 ## Features
 
 ### Core Functionality

@@ -82,3 +82,23 @@ _tkinter.TclError: no display name and no $DISPLAY environment variable
 2025-09-15 15:43:33,328 - core.data_handler - INFO - Loaded 41 projection images
 2025-09-15 15:43:33,343 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
 2025-09-15 15:46:12,657 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-15 15:51:53,849 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-15 15:52:00,332 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-15 15:52:00,341 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-15 15:52:20,037 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-09-15 15:52:57,329 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-09-22 13:03:53,928 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-22 13:04:08,170 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-22 13:04:08,181 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-30 15:12:46,633 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-30 15:13:03,466 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-30 15:13:03,486 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-09-30 16:11:49,395 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-09-30 16:11:56,407 - core.data_handler - INFO - Loaded 41 projection images
+2025-09-30 16:11:56,428 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-10-02 22:46:46,109 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-10-02 22:46:54,227 - core.data_handler - INFO - Loaded 41 projection images
+2025-10-02 22:46:54,240 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-10-02 22:49:44,807 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-10-02 22:49:50,948 - core.data_handler - INFO - Loaded 41 projection images
+2025-10-02 22:49:50,958 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
