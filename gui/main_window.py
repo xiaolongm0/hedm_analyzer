@@ -297,6 +297,8 @@ class HEDMAnalyzer:
 
         ttk.Button(analysis_frame, text="Analyze Current Frame",
                   command=self.run_analysis).pack(fill=tk.X, pady=2)
+        ttk.Button(analysis_frame, text="Analyze All Frames",
+                  command=self.run_all_frames_analysis).pack(fill=tk.X, pady=2)
         
         # Status log
         log_frame = ttk.LabelFrame(parent, text="Status Log", padding=5)
@@ -543,7 +545,80 @@ class HEDMAnalyzer:
 
         # Display results
         self._display_results(frame)
-    
+
+    def run_all_frames_analysis(self):
+        """Run analysis on all frames and save statistics to file"""
+        if self.data_handler.data is None:
+            messagebox.showwarning("Warning", "Please load data first")
+            return
+
+        # Ask user where to save the report
+        filename = filedialog.asksaveasfilename(
+            title="Save All Frames Analysis Report",
+            defaultextension=".json",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        )
+
+        if not filename:
+            return  # User cancelled
+
+        self.log_message(f"Starting all frames analysis ({self.data_handler.shape[0]} frames)...")
+        self.log_message("This may take a while depending on dataset size...")
+
+        # Set analysis parameters
+        try:
+            threshold = float(self.threshold_var.get())
+            sat_threshold = int(self.sat_threshold_var.get())
+
+            self.analysis_engine.set_threshold(threshold)
+            self.analysis_engine.set_saturation_threshold(sat_threshold)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid parameter values")
+            return
+
+        # Load mask if specified
+        mask_file = self.mask_file_var.get()
+        if mask_file and os.path.exists(mask_file):
+            mask = self.data_handler.load_mask_file(mask_file)
+            if mask is not None:
+                self.analysis_engine.set_mask(mask)
+
+        # Run analysis in separate thread (this takes longer)
+        threading.Thread(
+            target=self._run_all_frames_analysis_thread,
+            args=(filename,),
+            daemon=True
+        ).start()
+
+    def _run_all_frames_analysis_thread(self, output_filename):
+        """Run all frames analysis in background thread"""
+        try:
+            # Analyze all frames
+            results = self.analysis_engine.analyze_all_frames_stats(self.data_handler.data)
+
+            # Add timestamp
+            from datetime import datetime
+            results['analysis_timestamp'] = datetime.now().isoformat()
+
+            # Save to file
+            with open(output_filename, 'w') as f:
+                json.dump(results, f, indent=2)
+
+            # Update GUI on main thread
+            self.root.after(0, lambda: self._all_frames_analysis_complete(output_filename))
+
+        except Exception as e:
+            self.root.after(0, lambda: messagebox.showerror("Error", f"All frames analysis failed: {e}"))
+            self.root.after(0, lambda: self.log_message(f"ERROR: {e}"))
+
+    def _all_frames_analysis_complete(self, output_filename):
+        """Called when all frames analysis completes"""
+        self.log_message("=" * 60)
+        self.log_message("All frames analysis complete!")
+        self.log_message(f"Report saved to: {output_filename}")
+        self.log_message("=" * 60)
+        messagebox.showinfo("Success", f"All frames analysis complete!\n\nReport saved to:\n{output_filename}")
+
     def _display_results(self, frame):
         """Display analysis results"""
         if not self.analysis_results:

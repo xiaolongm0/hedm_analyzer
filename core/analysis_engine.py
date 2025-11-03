@@ -194,4 +194,54 @@ class AnalysisEngine:
             hist_data = hist_data[hist_data >= self.threshold]
 
         return hist_data
-    
+
+    def analyze_all_frames_stats(self, data: np.ndarray) -> Dict:
+        """Analyze all frames and return per-frame statistics (no histograms)
+
+        This is optimized for saving statistics to file without storing
+        large histogram data in memory.
+        """
+        self.logger.info(f"Analyzing {data.shape[0]} frames...")
+
+        results = {
+            'analysis_parameters': {
+                'threshold': self.threshold,
+                'saturation_threshold': self.saturation_threshold,
+                'num_rois': len(self.rois),
+                'roi_names': [roi.name for roi in self.rois],
+                'mask_applied': self.mask is not None
+            },
+            'data_info': {
+                'shape': list(data.shape),
+                'dtype': str(data.dtype),
+                'num_frames': int(data.shape[0]),
+                'frame_width': int(data.shape[2]),
+                'frame_height': int(data.shape[1])
+            },
+            'per_frame_statistics': []
+        }
+
+        # Analyze each frame
+        for frame_idx in range(data.shape[0]):
+            frame = data[frame_idx]
+
+            # Calculate frame statistics
+            frame_stats = self.analyze_frame(frame)
+            saturation_stats = self.calculate_saturation_analysis(frame)
+
+            frame_result = {
+                'frame_index': int(frame_idx),
+                'statistics': {name: stats.to_dict() for name, stats in frame_stats.items()},
+                'saturation': saturation_stats
+            }
+
+            results['per_frame_statistics'].append(frame_result)
+
+            # Log progress every 10%
+            if (frame_idx + 1) % max(1, data.shape[0] // 10) == 0:
+                progress = ((frame_idx + 1) / data.shape[0]) * 100
+                self.logger.info(f"Progress: {progress:.0f}% ({frame_idx + 1}/{data.shape[0]} frames)")
+
+        self.logger.info("All frames analysis complete!")
+        return results
+
