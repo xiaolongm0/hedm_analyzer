@@ -18,7 +18,6 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.data_handler import DataHandler
 from core.analysis_engine import AnalysisEngine, ROI, Statistics
-from core.attenuation_calc import AttenuationCalculator, ScanConditions, AttenuationSettings
 
 class ImageViewer(tk.Frame):
     """Image display widget with ROI selection capabilities"""
@@ -206,7 +205,6 @@ class HEDMAnalyzer:
         # Initialize core components
         self.data_handler = DataHandler()
         self.analysis_engine = AnalysisEngine()
-        self.attenuation_calc = AttenuationCalculator()
         
         # Data storage
         self.current_frame_idx = 0
@@ -276,18 +274,6 @@ class HEDMAnalyzer:
         ttk.Entry(mask_frame, textvariable=self.mask_file_var).pack(side=tk.LEFT, fill=tk.X, expand=True)
         ttk.Button(mask_frame, text="Browse", command=self.browse_mask_file).pack(side=tk.RIGHT)
         
-        # Scan conditions
-        scan_frame = ttk.LabelFrame(parent, text="Scan Conditions", padding=10)
-        scan_frame.pack(fill=tk.X, padx=5, pady=5)
-        
-        ttk.Label(scan_frame, text="X-ray Energy (keV):").pack(anchor=tk.W)
-        self.energy_var = tk.StringVar(value="80.0")
-        ttk.Entry(scan_frame, textvariable=self.energy_var).pack(fill=tk.X, pady=2)
-        
-        ttk.Label(scan_frame, text="Exposure Time (s):").pack(anchor=tk.W)
-        self.exposure_var = tk.StringVar(value="0.5")
-        ttk.Entry(scan_frame, textvariable=self.exposure_var).pack(fill=tk.X, pady=2)
-        
         # ROI management
         roi_frame = ttk.LabelFrame(parent, text="ROI Management", padding=10)
         roi_frame.pack(fill=tk.X, padx=5, pady=5)
@@ -308,11 +294,9 @@ class HEDMAnalyzer:
         # Analysis controls
         analysis_frame = ttk.LabelFrame(parent, text="Analysis", padding=10)
         analysis_frame.pack(fill=tk.X, padx=5, pady=5)
-        
-        ttk.Button(analysis_frame, text="Run Analysis", 
+
+        ttk.Button(analysis_frame, text="Analyze Current Frame",
                   command=self.run_analysis).pack(fill=tk.X, pady=2)
-        ttk.Button(analysis_frame, text="Export Results", 
-                  command=self.export_results).pack(fill=tk.X, pady=2)
         
         # Status log
         log_frame = ttk.LabelFrame(parent, text="Status Log", padding=5)
@@ -518,131 +502,107 @@ class HEDMAnalyzer:
         self.log_message("Cleared all ROIs")
     
     def run_analysis(self):
-        """Run the complete analysis"""
+        """Run analysis on current frame only"""
         if self.data_handler.data is None:
             messagebox.showwarning("Warning", "Please load data first")
             return
-        
-        self.log_message("Starting analysis...")
-        
+
+        self.log_message(f"Analyzing frame {self.current_frame_idx+1}...")
+
         # Set analysis parameters
         try:
             threshold = float(self.threshold_var.get())
             sat_threshold = int(self.sat_threshold_var.get())
-            
+
             self.analysis_engine.set_threshold(threshold)
             self.analysis_engine.set_saturation_threshold(sat_threshold)
         except ValueError:
             messagebox.showerror("Error", "Invalid parameter values")
             return
-        
+
         # Load mask if specified
         mask_file = self.mask_file_var.get()
         if mask_file and os.path.exists(mask_file):
             mask = self.data_handler.load_mask_file(mask_file)
             if mask is not None:
                 self.analysis_engine.set_mask(mask)
-        
-        # Run analysis in separate thread
-        threading.Thread(target=self._run_analysis_thread, daemon=True).start()
+
+        # Get current frame
+        frame = self.data_handler.get_frame(self.current_frame_idx)
+
+        # Analyze frame (fast - no threading needed)
+        frame_stats = self.analysis_engine.analyze_frame(frame)
+        saturation_stats = self.analysis_engine.calculate_saturation_analysis(frame)
+
+        # Store results
+        self.analysis_results = {
+            'frame_index': self.current_frame_idx,
+            'statistics': {name: stats.to_dict() for name, stats in frame_stats.items()},
+            'saturation': saturation_stats
+        }
+
+        # Display results
+        self._display_results(frame)
     
-    def _run_analysis_thread(self):
-        """Run analysis in background thread"""
-        try:
-            # Generate analysis report
-            self.analysis_results = self.analysis_engine.generate_report(self.data_handler.data)
-            
-            # Calculate attenuation report
-            energy = float(self.energy_var.get())
-            exposure = float(self.exposure_var.get())
-            
-            scan_conditions = ScanConditions(
-                energy_kev=energy,
-                exposure_time_s=exposure,
-                attenuation_settings=[]  # Would be populated from GUI inputs
-            )
-            
-            overall_stats = self.analysis_results['overall_statistics'].get('overall', {})
-            attenuation_report = self.attenuation_calc.generate_attenuation_report(
-                scan_conditions, overall_stats
-            )
-            
-            self.analysis_results['attenuation_analysis'] = attenuation_report
-            
-            # Update GUI on main thread
-            self.root.after(0, self._display_results)
-            
-        except Exception as e:
-            self.root.after(0, lambda: messagebox.showerror("Error", f"Analysis failed: {e}"))
-    
-    def _display_results(self):
+    def _display_results(self, frame):
         """Display analysis results"""
         if not self.analysis_results:
             return
-        
+
         self.log_message("Analysis complete!")
-        
+
         # Display text results
         results_text = json.dumps(self.analysis_results, indent=2)
         self.results_text.delete(1.0, tk.END)
         self.results_text.insert(1.0, results_text)
-        
+
         # Plot histograms
-        self._plot_histograms()
+        self._plot_histograms(frame)
     
-    def _plot_histograms(self):
-        """Plot histograms for overall and ROI data"""
-        if not self.analysis_results or 'histograms' not in self.analysis_results:
-            return
-        
+    def _plot_histograms(self, frame):
+        """Plot histogram PDFs for overall frame and ROIs"""
         # Clear previous plots
         for ax in self.axes.flat:
             ax.clear()
-        
-        histograms = self.analysis_results['histograms']
-        
-        # Plot overall histogram
-        if 'overall' in histograms:
-            hist_data = histograms['overall']
-            self.axes[0, 0].bar(hist_data['bins'], hist_data['counts'])
-            self.axes[0, 0].set_title('Overall Histogram')
+
+        # Get histogram data for overall frame
+        overall_data = self.analysis_engine.calculate_histogram(frame)
+
+        if len(overall_data) > 0:
+            # Plot overall histogram as PDF
+            self.axes[0, 0].hist(overall_data, bins='auto', density=True, alpha=0.7, color='blue', edgecolor='black')
+            self.axes[0, 0].set_title('Overall Frame - PDF')
             self.axes[0, 0].set_xlabel('Intensity')
-            self.axes[0, 0].set_ylabel('Counts')
-        
+            self.axes[0, 0].set_ylabel('Probability Density')
+            self.axes[0, 0].grid(True, alpha=0.3)
+
         # Plot ROI histograms (up to 3)
-        roi_names = [name for name in histograms.keys() if name != 'overall']
-        for i, roi_name in enumerate(roi_names[:3]):
-            row = i // 2
-            col = (i + 1) % 2
-            if row < 2:
-                hist_data = histograms[roi_name]
-                self.axes[row, col].bar(hist_data['bins'], hist_data['counts'])
-                self.axes[row, col].set_title(f'ROI: {roi_name}')
-                self.axes[row, col].set_xlabel('Intensity')
-                self.axes[row, col].set_ylabel('Counts')
-        
+        roi_positions = [(0, 1), (1, 0), (1, 1)]  # Positions for up to 3 ROIs
+        for i, roi in enumerate(self.analysis_engine.rois[:3]):
+            if i < len(roi_positions):
+                row, col = roi_positions[i]
+                roi_data = self.analysis_engine.calculate_histogram(frame, roi=roi)
+
+                if len(roi_data) > 0:
+                    self.axes[row, col].hist(roi_data, bins='auto', density=True, alpha=0.7, color='green', edgecolor='black')
+                    self.axes[row, col].set_title(f'ROI: {roi.name} - PDF')
+                    self.axes[row, col].set_xlabel('Intensity')
+                    self.axes[row, col].set_ylabel('Probability Density')
+                    self.axes[row, col].grid(True, alpha=0.3)
+                else:
+                    self.axes[row, col].text(0.5, 0.5, 'No data', ha='center', va='center', transform=self.axes[row, col].transAxes)
+                    self.axes[row, col].set_title(f'ROI: {roi.name}')
+
+        # Hide unused subplots
+        num_rois = len(self.analysis_engine.rois)
+        if num_rois < 3:
+            for i in range(num_rois, 3):
+                row, col = roi_positions[i]
+                self.axes[row, col].axis('off')
+
         self.fig.tight_layout()
-        self.canvas.draw()
+        self.canvas.draw_idle()  # Use draw_idle() for better Tkinter compatibility
     
-    def export_results(self):
-        """Export analysis results"""
-        if not self.analysis_results:
-            messagebox.showwarning("Warning", "No results to export. Run analysis first.")
-            return
-        
-        filename = filedialog.asksaveasfilename(
-            title="Save Results",
-            defaultextension=".json",
-            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
-        )
-        
-        if filename:
-            try:
-                with open(filename, 'w') as f:
-                    json.dump(self.analysis_results, f, indent=2)
-                self.log_message(f"Results exported to: {filename}")
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to export results: {e}")
 
 def main():
     """Main application entry point"""

@@ -102,3 +102,20 @@ _tkinter.TclError: no display name and no $DISPLAY environment variable
 2025-10-02 22:49:44,807 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
 2025-10-02 22:49:50,948 - core.data_handler - INFO - Loaded 41 projection images
 2025-10-02 22:49:50,958 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-11-03 11:39:11,075 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 11:39:28,668 - core.data_handler - INFO - Loaded 41 projection images
+2025-11-03 11:39:28,673 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-11-03 11:43:13,113 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 11:43:30,347 - core.data_handler - INFO - Loaded 41 projection images
+2025-11-03 11:43:30,356 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-11-03 11:43:43,429 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-11-03 11:44:20,799 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-11-03 11:46:04,086 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 11:46:13,660 - core.data_handler - INFO - Loaded 41 projection images
+2025-11-03 11:46:13,670 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-11-03 11:46:23,944 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-11-03 11:47:01,667 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-11-03 11:55:57,601 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 12:08:05,313 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 12:08:16,103 - core.data_handler - INFO - Loaded 41 projection images
+2025-11-03 12:08:16,110 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
