@@ -102,3 +102,37 @@ _tkinter.TclError: no display name and no $DISPLAY environment variable
 2025-10-02 22:49:44,807 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
 2025-10-02 22:49:50,948 - core.data_handler - INFO - Loaded 41 projection images
 2025-10-02 22:49:50,958 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-11-03 11:39:11,075 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 11:39:28,668 - core.data_handler - INFO - Loaded 41 projection images
+2025-11-03 11:39:28,673 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-11-03 11:43:13,113 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 11:43:30,347 - core.data_handler - INFO - Loaded 41 projection images
+2025-11-03 11:43:30,356 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-11-03 11:43:43,429 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-11-03 11:44:20,799 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-11-03 11:46:04,086 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 11:46:13,660 - core.data_handler - INFO - Loaded 41 projection images
+2025-11-03 11:46:13,670 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-11-03 11:46:23,944 - core.analysis_engine - INFO - Generating comprehensive analysis report...
+2025-11-03 11:47:01,667 - core.analysis_engine - INFO - Analysis report generated successfully
+2025-11-03 11:55:57,601 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 12:08:05,313 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 12:08:16,103 - core.data_handler - INFO - Loaded 41 projection images
+2025-11-03 12:08:16,110 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-11-03 12:13:58,005 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 12:18:35,976 - __main__ - INFO - Starting HEDM X-ray Image Analyzer
+2025-11-03 12:18:49,191 - core.data_handler - INFO - Loaded 41 projection images
+2025-11-03 12:18:49,197 - core.data_handler - INFO - HDF5 data loaded: shape=(41, 2880, 2880), dtype=uint16
+2025-11-03 12:19:38,721 - core.analysis_engine - INFO - Analyzing 41 frames...
+2025-11-03 12:19:38,990 - core.analysis_engine - INFO - Progress: 10% (4/41 frames)
+2025-11-03 12:19:39,260 - core.analysis_engine - INFO - Progress: 20% (8/41 frames)
+2025-11-03 12:19:39,526 - core.analysis_engine - INFO - Progress: 29% (12/41 frames)
+2025-11-03 12:19:39,800 - core.analysis_engine - INFO - Progress: 39% (16/41 frames)
+2025-11-03 12:19:40,062 - core.analysis_engine - INFO - Progress: 49% (20/41 frames)
+2025-11-03 12:19:40,329 - core.analysis_engine - INFO - Progress: 59% (24/41 frames)
+2025-11-03 12:19:40,590 - core.analysis_engine - INFO - Progress: 68% (28/41 frames)
+2025-11-03 12:19:40,890 - core.analysis_engine - INFO - Progress: 78% (32/41 frames)
+2025-11-03 12:19:41,160 - core.analysis_engine - INFO - Progress: 88% (36/41 frames)
+2025-11-03 12:19:41,413 - core.analysis_engine - INFO - Progress: 98% (40/41 frames)
+2025-11-03 12:19:41,482 - core.analysis_engine - INFO - All frames analysis complete!
+2025-11-03 12:21:54,615 - core.analysis_engine - INFO - Added ROI 'ROI_1': (695, 691, 2308, 2053)
