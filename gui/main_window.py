@@ -260,12 +260,7 @@ class HEDMAnalyzer:
         # Parameters section
         params_frame = ttk.LabelFrame(parent, text="Analysis Parameters", padding=10)
         params_frame.pack(fill=tk.X, padx=5, pady=5)
-        
-        # Threshold
-        ttk.Label(params_frame, text="Intensity Threshold:").pack(anchor=tk.W)
-        self.threshold_var = tk.StringVar(value="0")
-        ttk.Entry(params_frame, textvariable=self.threshold_var).pack(fill=tk.X, pady=2)
-        
+
         # Saturation threshold
         ttk.Label(params_frame, text="Saturation Threshold:").pack(anchor=tk.W)
         self.sat_threshold_var = tk.StringVar(value="65535")
@@ -312,7 +307,17 @@ class HEDMAnalyzer:
                   command=self.run_analysis).pack(fill=tk.X, pady=2)
         ttk.Button(analysis_frame, text="Analyze All Frames",
                   command=self.run_all_frames_analysis).pack(fill=tk.X, pady=2)
-        
+
+        # Lower threshold
+        ttk.Separator(analysis_frame, orient='horizontal').pack(fill=tk.X, pady=5)
+        ttk.Label(analysis_frame, text="Lower Threshold:").pack(anchor=tk.W)
+        threshold_frame = ttk.Frame(analysis_frame)
+        threshold_frame.pack(fill=tk.X, pady=2)
+        self.threshold_var = tk.StringVar(value="0")
+        ttk.Entry(threshold_frame, textvariable=self.threshold_var).pack(fill=tk.X)
+        ttk.Label(analysis_frame, text="(Exclude pixels below this value from analysis)",
+                 font=('TkDefaultFont', 8), foreground='gray').pack(anchor=tk.W, pady=(0, 5))
+
         # Status log
         log_frame = ttk.LabelFrame(parent, text="Status Log", padding=5)
         log_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
