@@ -195,13 +195,25 @@ class AnalysisEngine:
 
         return hist_data
 
-    def analyze_all_frames_stats(self, data: np.ndarray) -> Dict:
+    def analyze_all_frames_stats(self, data: np.ndarray, skip_frames: int = 0) -> Dict:
         """Analyze all frames and return per-frame statistics (no histograms)
 
         This is optimized for saving statistics to file without storing
         large histogram data in memory.
+
+        Args:
+            data: Input data array (frames x height x width)
+            skip_frames: Number of initial frames to skip (default: 0)
         """
-        self.logger.info(f"Analyzing {data.shape[0]} frames...")
+        total_frames = data.shape[0]
+        start_frame = skip_frames
+        frames_to_analyze = total_frames - skip_frames
+
+        if skip_frames > 0:
+            self.logger.info(f"Skipping first {skip_frames} frame(s)")
+            self.logger.info(f"Analyzing {frames_to_analyze} frames (frame {start_frame + 1} to {total_frames})...")
+        else:
+            self.logger.info(f"Analyzing {total_frames} frames...")
 
         results = {
             'analysis_parameters': {
@@ -209,20 +221,23 @@ class AnalysisEngine:
                 'saturation_threshold': self.saturation_threshold,
                 'num_rois': len(self.rois),
                 'roi_names': [roi.name for roi in self.rois],
-                'mask_applied': self.mask is not None
+                'mask_applied': self.mask is not None,
+                'skip_frames': skip_frames
             },
             'data_info': {
                 'shape': list(data.shape),
                 'dtype': str(data.dtype),
-                'num_frames': int(data.shape[0]),
+                'total_frames': int(total_frames),
+                'analyzed_frames': int(frames_to_analyze),
+                'start_frame': int(start_frame),
                 'frame_width': int(data.shape[2]),
                 'frame_height': int(data.shape[1])
             },
             'per_frame_statistics': []
         }
 
-        # Analyze each frame
-        for frame_idx in range(data.shape[0]):
+        # Analyze each frame (starting from skip_frames)
+        for frame_idx in range(start_frame, total_frames):
             frame = data[frame_idx]
 
             # Calculate frame statistics
@@ -238,9 +253,10 @@ class AnalysisEngine:
             results['per_frame_statistics'].append(frame_result)
 
             # Log progress every 10%
-            if (frame_idx + 1) % max(1, data.shape[0] // 10) == 0:
-                progress = ((frame_idx + 1) / data.shape[0]) * 100
-                self.logger.info(f"Progress: {progress:.0f}% ({frame_idx + 1}/{data.shape[0]} frames)")
+            frames_processed = frame_idx - start_frame + 1
+            if frames_processed % max(1, frames_to_analyze // 10) == 0:
+                progress = (frames_processed / frames_to_analyze) * 100
+                self.logger.info(f"Progress: {progress:.0f}% ({frames_processed}/{frames_to_analyze} frames)")
 
         self.logger.info("All frames analysis complete!")
         return results

@@ -208,6 +208,7 @@ class HEDMAnalyzer:
         
         # Data storage
         self.current_frame_idx = 0
+        self.skip_frames = 0  # Number of frames to skip at the beginning
         self.analysis_results = None
         
         # Setup logging
@@ -239,10 +240,22 @@ class HEDMAnalyzer:
         file_frame = ttk.LabelFrame(parent, text="Data Input", padding=10)
         file_frame.pack(fill=tk.X, padx=5, pady=5)
         
-        ttk.Button(file_frame, text="Load HDF5 File", 
+        ttk.Button(file_frame, text="Load HDF5 File",
                   command=self.load_hdf5_file).pack(fill=tk.X, pady=2)
-        ttk.Button(file_frame, text="Load Image Sequence", 
+        ttk.Button(file_frame, text="Load Image Sequence",
                   command=self.load_image_sequence).pack(fill=tk.X, pady=2)
+
+        # Skip frames control
+        skip_frame = ttk.Frame(file_frame)
+        skip_frame.pack(fill=tk.X, pady=5)
+        ttk.Label(skip_frame, text="Skip Frames:").pack(side=tk.LEFT)
+        self.skip_frames_var = tk.IntVar(value=0)
+        skip_spinbox = ttk.Spinbox(skip_frame, from_=0, to=10,
+                                    textvariable=self.skip_frames_var,
+                                    width=10, command=self.on_skip_frames_change)
+        skip_spinbox.pack(side=tk.LEFT, padx=5)
+        skip_spinbox.bind('<KeyRelease>', lambda e: self.on_skip_frames_change())
+        ttk.Label(skip_frame, text="(Start from frame N+1)").pack(side=tk.LEFT)
         
         # Parameters section
         params_frame = ttk.LabelFrame(parent, text="Analysis Parameters", padding=10)
@@ -369,14 +382,27 @@ class HEDMAnalyzer:
             title="Select HDF5 File",
             filetypes=[("HDF5 files", "*.h5 *.hdf5"), ("All files", "*.*")]
         )
-        
+
         if filename:
             self.log_message(f"Loading HDF5 file: {filename}")
             success = self.data_handler.load_hdf5(filename)
-            
+
             if success:
-                self.log_message(f"Successfully loaded {self.data_handler.shape[0]} frames")
-                self.current_frame_idx = 0
+                total_frames = self.data_handler.shape[0]
+                self.log_message(f"Successfully loaded {total_frames} frames")
+
+                # Set skip_frames from UI and validate
+                self.skip_frames = self.skip_frames_var.get()
+                if self.skip_frames >= total_frames:
+                    self.skip_frames = 0
+                    self.skip_frames_var.set(0)
+                    self.log_message(f"Reset skip frames to 0 (dataset has {total_frames} frames)")
+
+                # Start at first non-skipped frame
+                self.current_frame_idx = self.skip_frames
+                if self.skip_frames > 0:
+                    self.log_message(f"Skipping first {self.skip_frames} frame(s), starting from frame {self.skip_frames + 1}")
+
                 self.update_display()
             else:
                 messagebox.showerror("Error", "Failed to load HDF5 file")
@@ -384,14 +410,27 @@ class HEDMAnalyzer:
     def load_image_sequence(self):
         """Load image sequence dialog"""
         directory = filedialog.askdirectory(title="Select Image Directory")
-        
+
         if directory:
             self.log_message(f"Loading image sequence from: {directory}")
             success = self.data_handler.load_image_sequence(directory, "*.png")
-            
+
             if success:
-                self.log_message(f"Successfully loaded {self.data_handler.shape[0]} images")
-                self.current_frame_idx = 0
+                total_frames = self.data_handler.shape[0]
+                self.log_message(f"Successfully loaded {total_frames} images")
+
+                # Set skip_frames from UI and validate
+                self.skip_frames = self.skip_frames_var.get()
+                if self.skip_frames >= total_frames:
+                    self.skip_frames = 0
+                    self.skip_frames_var.set(0)
+                    self.log_message(f"Reset skip frames to 0 (dataset has {total_frames} frames)")
+
+                # Start at first non-skipped frame
+                self.current_frame_idx = self.skip_frames
+                if self.skip_frames > 0:
+                    self.log_message(f"Skipping first {self.skip_frames} frame(s), starting from frame {self.skip_frames + 1}")
+
                 self.update_display()
             else:
                 messagebox.showerror("Error", "Failed to load image sequence")
@@ -402,9 +441,35 @@ class HEDMAnalyzer:
             title="Select Mask File",
             filetypes=[("Image files", "*.png *.tiff *.tif"), ("Text files", "*.txt"), ("All files", "*.*")]
         )
-        
+
         if filename:
             self.mask_file_var.set(filename)
+
+    def on_skip_frames_change(self):
+        """Handle skip frames value change"""
+        try:
+            skip_val = self.skip_frames_var.get()
+            if self.data_handler.data is not None:
+                total_frames = self.data_handler.shape[0]
+                if skip_val >= total_frames:
+                    messagebox.showwarning("Warning",
+                        f"Cannot skip {skip_val} frames - dataset only has {total_frames} frames.\n" +
+                        f"Maximum skip value is {total_frames - 1}")
+                    self.skip_frames_var.set(max(0, total_frames - 1))
+                    skip_val = self.skip_frames_var.get()
+
+                self.skip_frames = skip_val
+
+                # Reset to first valid frame if current frame is now skipped
+                if self.current_frame_idx < self.skip_frames:
+                    self.current_frame_idx = self.skip_frames
+                    self.update_display()
+
+                self.log_message(f"Skip frames set to {skip_val}. Analysis will start from frame {skip_val + 1}")
+            else:
+                self.skip_frames = skip_val
+        except (ValueError, tk.TclError):
+            pass  # Invalid input, ignore
     
     def on_saturation_threshold_change(self, event=None):
         """Handle saturation threshold changes"""
@@ -462,7 +527,7 @@ class HEDMAnalyzer:
     
     def prev_frame(self):
         """Go to previous frame"""
-        if self.data_handler.data is not None and self.current_frame_idx > 0:
+        if self.data_handler.data is not None and self.current_frame_idx > self.skip_frames:
             self.current_frame_idx -= 1
             self.update_display()
     
@@ -562,7 +627,15 @@ class HEDMAnalyzer:
         if not filename:
             return  # User cancelled
 
-        self.log_message(f"Starting all frames analysis ({self.data_handler.shape[0]} frames)...")
+        total_frames = self.data_handler.shape[0]
+        frames_to_analyze = total_frames - self.skip_frames
+
+        self.log_message(f"Starting all frames analysis...")
+        if self.skip_frames > 0:
+            self.log_message(f"Skipping first {self.skip_frames} frame(s)")
+            self.log_message(f"Analyzing {frames_to_analyze} frames (frame {self.skip_frames + 1} to {total_frames})")
+        else:
+            self.log_message(f"Analyzing {frames_to_analyze} frames")
         self.log_message("This may take a while depending on dataset size...")
 
         # Set analysis parameters
@@ -593,12 +666,16 @@ class HEDMAnalyzer:
     def _run_all_frames_analysis_thread(self, output_filename):
         """Run all frames analysis in background thread"""
         try:
-            # Analyze all frames
-            results = self.analysis_engine.analyze_all_frames_stats(self.data_handler.data)
+            # Analyze all frames (skipping the first N frames)
+            results = self.analysis_engine.analyze_all_frames_stats(
+                self.data_handler.data,
+                skip_frames=self.skip_frames
+            )
 
-            # Add timestamp
+            # Add timestamp and skip info
             from datetime import datetime
             results['analysis_timestamp'] = datetime.now().isoformat()
+            results['skip_frames'] = self.skip_frames
 
             # Save to file
             with open(output_filename, 'w') as f:
