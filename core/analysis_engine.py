@@ -91,7 +91,12 @@ class AnalysisEngine:
         self.logger.info("Cleared all ROIs")
     
     def set_threshold(self, threshold: float) -> None:
-        """Set intensity threshold for analysis"""
+        """Set lower intensity threshold for analysis
+
+        Pixels with intensity < threshold will be excluded from:
+        - Statistics calculation (mean, median, std, etc.)
+        - Histogram generation
+        """
         self.threshold = threshold
     
     def set_mask(self, mask: np.ndarray) -> None:
@@ -103,7 +108,11 @@ class AnalysisEngine:
         self.saturation_threshold = threshold
     
     def calculate_statistics(self, data: np.ndarray, mask: Optional[np.ndarray] = None) -> Statistics:
-        """Calculate basic statistics for data array"""
+        """Calculate basic statistics for data array
+
+        Applies lower threshold to exclude pixels below the threshold value.
+        Only pixels >= threshold are included in statistics calculation.
+        """
         if mask is not None:
             # Apply mask (True = valid pixels)
             valid_data = data[mask]
@@ -112,6 +121,10 @@ class AnalysisEngine:
 
         # Remove NaN values
         valid_data = valid_data[~np.isnan(valid_data)]
+
+        # Apply lower threshold to exclude low-intensity pixels
+        if self.threshold > 0:
+            valid_data = valid_data[valid_data >= self.threshold]
 
         if len(valid_data) == 0:
             return Statistics(0, 0, 0, 0, 0, 0, 0, {})
@@ -169,7 +182,10 @@ class AnalysisEngine:
         """Calculate histogram data for a single frame - returns flattened data for matplotlib
 
         Returns the raw data array (not histogram bins) so matplotlib can calculate
-        the PDF properly with density=True
+        the PDF properly with density=True.
+
+        Applies lower threshold to exclude pixels below the threshold value.
+        Only pixels >= threshold are included in histogram.
         """
         # Extract ROI if specified
         if roi is not None:
