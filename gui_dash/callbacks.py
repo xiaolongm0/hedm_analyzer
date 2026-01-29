@@ -104,8 +104,8 @@ def register_callbacks(app, data_handler, analysis_engine):
     # Callback 1: Load file from disk
     @callback(
         [Output('data-store', 'data'),
-         Output('current-frame-idx', 'data'),
-         Output('rois-store', 'data'),
+         Output('current-frame-idx', 'data', allow_duplicate=True),
+         Output('rois-store', 'data', allow_duplicate=True),
          Output('upload-status', 'children')],
         Input('btn-load-file', 'n_clicks'),
         State('file-path-input', 'value'),
@@ -127,8 +127,8 @@ def register_callbacks(app, data_handler, analysis_engine):
             metadata = {
                 'filename': os.path.basename(file_path),
                 'filepath': file_path,
-                'num_frames': len(data_handler.frames),
-                'frame_shape': data_handler.frames[0].shape if data_handler.frames else (0, 0),
+                'num_frames': data_handler.data.shape[0] if data_handler.data is not None else 0,
+                'frame_shape': data_handler.data.shape[1:] if data_handler.data is not None else (0, 0),
             }
 
             status = f"Loaded: {metadata['filename']} ({metadata['num_frames']} frames, {metadata['frame_shape']})"
@@ -154,11 +154,11 @@ def register_callbacks(app, data_handler, analysis_engine):
     def update_image_display(frame_idx, sat_threshold, highlight_sat, lower_threshold, rois, metadata):
         logger.debug(f"[CALLBACK 2] Update image display: frame {frame_idx}")
 
-        if not metadata or not data_handler.frames or frame_idx >= len(data_handler.frames):
+        if not metadata or data_handler.data is None or frame_idx >= data_handler.data.shape[0]:
             return go.Figure()
 
         try:
-            frame = data_handler.frames[frame_idx]
+            frame = data_handler.get_frame(frame_idx)
             should_highlight = 1 in (highlight_sat or [])
 
             # Prepare image with saturation highlighting
@@ -212,14 +212,14 @@ def register_callbacks(app, data_handler, analysis_engine):
     def update_frame_stats(frame_idx, sat_threshold, lower_threshold, metadata):
         logger.debug(f"[CALLBACK 3] Update frame stats: frame {frame_idx}")
 
-        if not metadata or not data_handler.frames or frame_idx >= len(data_handler.frames):
+        if not metadata or data_handler.data is None or frame_idx >= data_handler.data.shape[0]:
             return "", "", ""
 
         try:
-            frame = data_handler.frames[frame_idx]
+            frame = data_handler.get_frame(frame_idx)
             skip_frames = 0  # TODO: Get from state if needed
 
-            frame_label = f"Frame {frame_idx + skip_frames}/{len(data_handler.frames) - 1 + skip_frames}"
+            frame_label = f"Frame {frame_idx + skip_frames}/{data_handler.data.shape[0] - 1 + skip_frames}"
             range_label = f"Range: {frame.min()} - {frame.max()}"
 
             sat_threshold = sat_threshold or 65535
@@ -234,7 +234,7 @@ def register_callbacks(app, data_handler, analysis_engine):
 
     # Callback 4: Navigate frames (combined prev/next)
     @callback(
-        Output('current-frame-idx', 'data'),
+        Output('current-frame-idx', 'data', allow_duplicate=True),
         [Input('btn-prev-frame', 'n_clicks'),
          Input('btn-next-frame', 'n_clicks')],
         State('current-frame-idx', 'data'),
@@ -244,7 +244,7 @@ def register_callbacks(app, data_handler, analysis_engine):
     def navigate_frames(prev_clicks, next_clicks, current_idx, metadata):
         logger.debug(f"[CALLBACK 4] Navigate frames: {ctx.triggered_id}")
 
-        if not metadata or not data_handler.frames:
+        if not metadata or data_handler.data is None:
             return 0
 
         new_idx = current_idx or 0
@@ -252,7 +252,7 @@ def register_callbacks(app, data_handler, analysis_engine):
         if ctx.triggered_id == 'btn-prev-frame':
             new_idx = max(0, new_idx - 1)
         elif ctx.triggered_id == 'btn-next-frame':
-            new_idx = min(len(data_handler.frames) - 1, new_idx + 1)
+            new_idx = min(data_handler.data.shape[0] - 1, new_idx + 1)
 
         logger.debug(f"[CALLBACK 4] Frame index: {new_idx}")
         return new_idx
@@ -278,7 +278,7 @@ def register_callbacks(app, data_handler, analysis_engine):
 
     # Callback 6: Manage ROIs (combined clear/capture)
     @callback(
-        Output('rois-store', 'data'),
+        Output('rois-store', 'data', allow_duplicate=True),
         [Input('btn-clear-rois', 'n_clicks'),
          Input('image-display', 'relayoutData')],
         State('rois-store', 'data'),
@@ -331,11 +331,11 @@ def register_callbacks(app, data_handler, analysis_engine):
     def analyze_frame(n_clicks, frame_idx, sat_threshold, lower_threshold, rois, metadata):
         logger.debug(f"[CALLBACK 7] Analyze frame {frame_idx}")
 
-        if not metadata or not data_handler.frames or frame_idx >= len(data_handler.frames):
+        if not metadata or data_handler.data is None or frame_idx >= data_handler.data.shape[0]:
             return "Error: No data loaded", go.Figure()
 
         try:
-            frame = data_handler.frames[frame_idx]
+            frame = data_handler.get_frame(frame_idx)
             sat_threshold = sat_threshold or 65535
             lower_threshold = lower_threshold or 0
 
