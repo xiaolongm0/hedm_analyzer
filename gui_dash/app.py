@@ -36,4 +36,4 @@ app.config.suppress_callback_exceptions = True
 app.server.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 1024
 
 if __name__ == '__main__':
-    app.run_server(debug=True, host='127.0.0.1', port=8050)
+    app.run(debug=True, host='127.0.0.1', port=8050)
