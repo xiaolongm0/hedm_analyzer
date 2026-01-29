@@ -104,8 +104,8 @@ def register_callbacks(app, data_handler, analysis_engine):
     # Callback 1: Load file from disk
     @callback(
         [Output('data-store', 'data'),
-         Output('current-frame-idx', 'data'),
-         Output('rois-store', 'data'),
+         Output('current-frame-idx', 'data', allow_duplicate=True),
+         Output('rois-store', 'data', allow_duplicate=True),
          Output('upload-status', 'children')],
         Input('btn-load-file', 'n_clicks'),
         State('file-path-input', 'value'),
@@ -234,7 +234,7 @@ def register_callbacks(app, data_handler, analysis_engine):
 
     # Callback 4: Navigate frames (combined prev/next)
     @callback(
-        Output('current-frame-idx', 'data'),
+        Output('current-frame-idx', 'data', allow_duplicate=True),
         [Input('btn-prev-frame', 'n_clicks'),
          Input('btn-next-frame', 'n_clicks')],
         State('current-frame-idx', 'data'),
@@ -278,7 +278,7 @@ def register_callbacks(app, data_handler, analysis_engine):
 
     # Callback 6: Manage ROIs (combined clear/capture)
     @callback(
-        Output('rois-store', 'data'),
+        Output('rois-store', 'data', allow_duplicate=True),
         [Input('btn-clear-rois', 'n_clicks'),
          Input('image-display', 'relayoutData')],
         State('rois-store', 'data'),
