@@ -13,6 +13,9 @@ h5py>=3.0.0
 
 # GUI and visualization
 matplotlib>=3.5.0
+dash>=2.14.0
+dash-bootstrap-components>=1.5.0
+plotly>=5.18.0
 
 # Standard library packages (should be available)
 # tkinter - usually comes with Python
