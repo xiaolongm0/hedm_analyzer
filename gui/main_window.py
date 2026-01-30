@@ -18,6 +18,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.data_handler import DataHandler
 from core.analysis_engine import AnalysisEngine, ROI, Statistics
+from core.parameter_optimizer import ParameterOptimizer
 
 class ImageViewer(tk.Frame):
     """Image display widget with ROI selection capabilities"""
@@ -201,20 +202,22 @@ class HEDMAnalyzer:
         self.root = root
         self.root.title("HEDM X-ray Image Analyzer")
         self.root.geometry("1400x900")
-        
+
         # Initialize core components
         self.data_handler = DataHandler()
         self.analysis_engine = AnalysisEngine()
-        
+        self.parameter_optimizer = ParameterOptimizer(logger=logging.getLogger(__name__))
+
         # Data storage
         self.current_frame_idx = 0
         self.skip_frames = 0  # Number of frames to skip at the beginning
         self.analysis_results = None
-        
+        self.param_results = None
+
         # Setup logging
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
-        
+
         self.setup_gui()
     
     def setup_gui(self):
@@ -281,7 +284,24 @@ class HEDMAnalyzer:
         self.mask_file_var = tk.StringVar()
         ttk.Entry(mask_frame, textvariable=self.mask_file_var).pack(side=tk.LEFT, fill=tk.X, expand=True)
         ttk.Button(mask_frame, text="Browse", command=self.browse_mask_file).pack(side=tk.RIGHT)
-        
+
+        # Parameter Recommendation section
+        param_rec_frame = ttk.LabelFrame(parent, text="Parameter Recommendation", padding=10)
+        param_rec_frame.pack(fill=tk.X, padx=5, pady=5)
+
+        ttk.Label(param_rec_frame, text="Experiment Data Directory:").pack(anchor=tk.W)
+        param_dir_frame = ttk.Frame(param_rec_frame)
+        param_dir_frame.pack(fill=tk.X, pady=2)
+        self.param_dir_var = tk.StringVar(value="./experiment_data")
+        ttk.Entry(param_dir_frame, textvariable=self.param_dir_var).pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(param_dir_frame, text="Browse", command=self.browse_param_directory).pack(side=tk.RIGHT, padx=2)
+
+        ttk.Button(param_rec_frame, text="Get Parameters",
+                  command=self.get_parameters).pack(fill=tk.X, pady=2)
+
+        ttk.Label(param_rec_frame, text="Analyzes folders: sample_atten-X_t-Y",
+                 font=('TkDefaultFont', 8), foreground='gray').pack(anchor=tk.W, pady=(0, 5))
+
         # ROI management
         roi_frame = ttk.LabelFrame(parent, text="ROI Management", padding=10)
         roi_frame.pack(fill=tk.X, padx=5, pady=5)
@@ -759,7 +779,167 @@ class HEDMAnalyzer:
 
         self.fig.tight_layout()
         self.canvas.draw_idle()  # Use draw_idle() for better Tkinter compatibility
-    
+
+    def browse_param_directory(self):
+        """Browse for parameter recommendation directory"""
+        directory = filedialog.askdirectory(title="Select Experiment Data Directory")
+        if directory:
+            self.param_dir_var.set(directory)
+            self.log_message(f"Parameter directory set to: {directory}")
+
+    def get_parameters(self):
+        """Get parameter recommendations from experiment data"""
+        directory = self.param_dir_var.get()
+
+        if not directory:
+            messagebox.showerror("Error", "No directory specified")
+            return
+
+        if not os.path.isdir(directory):
+            messagebox.showerror("Error", f"Directory not found: {directory}")
+            return
+
+        # Run analysis in a separate thread to prevent UI blocking
+        thread = threading.Thread(target=self._analyze_parameters_thread, args=(directory,))
+        thread.daemon = True
+        thread.start()
+
+    def _analyze_parameters_thread(self, directory):
+        """Background thread for parameter analysis"""
+        try:
+            self.log_message(f"Analyzing parameter directory: {directory}")
+            results = self.parameter_optimizer.analyze_directory(directory)
+
+            if not results['success']:
+                self.root.after(0, lambda: messagebox.showerror("Analysis Error", f"Error: {results['error']}"))
+                self.log_message(f"Analysis failed: {results['error']}")
+                return
+
+            self.param_results = results
+            self.log_message(f"Analysis complete. Found {len(results['predictions'])} predictions.")
+            # Schedule GUI update on main thread
+            self.root.after(0, self.show_parameter_results)
+
+        except Exception as e:
+            self.log_message(f"Error during analysis: {str(e)}")
+            self.root.after(0, lambda: messagebox.showerror("Error", f"Analysis failed: {str(e)}"))
+            import traceback
+            traceback.print_exc()
+
+    def show_parameter_results(self):
+        """Display parameter recommendations in a new window"""
+        if not self.param_results or not self.param_results.get('success'):
+            messagebox.showerror("Error", "No valid results to display")
+            return
+
+        # Create new window for results
+        results_window = tk.Toplevel(self.root)
+        results_window.title("Parameter Recommendations")
+        results_window.geometry("1000x700")
+
+        # Create notebook for tabs
+        notebook = ttk.Notebook(results_window)
+        notebook.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        # Summary tab
+        summary_frame = ttk.Frame(notebook)
+        notebook.add(summary_frame, text="Summary")
+
+        fit = self.param_results['fit_results']
+        summary_text = f"""FITTED PARAMETERS
+{'='*60}
+
+Attenuation Coefficient (μ):     {fit['mu']:.6f} mm⁻¹
+Unattenuated Flux (I₀):          {fit['I0']:.6e} counts/s
+R² (Goodness of Fit):            {fit['r_squared']:.6f}
+
+{'='*60}
+
+This data was fitted using the Beer-Lambert law:
+    I(x) = I₀ × exp(-μ × x)
+
+where:
+    I(x) = intensity rate at thickness x
+    x = material thickness (mm)
+    μ = attenuation coefficient
+    I₀ = unattenuated flux
+"""
+
+        summary_text_widget = scrolledtext.ScrolledText(summary_frame, font=('Courier', 10))
+        summary_text_widget.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        summary_text_widget.insert(tk.END, summary_text)
+        summary_text_widget.config(state=tk.DISABLED)
+
+        # Table tab
+        table_frame = ttk.Frame(notebook)
+        notebook.add(table_frame, text="Recommendations")
+
+        # Create table with predictions
+        table_text = f"""{'Atten Idx':<12} | {'Thickness':<12} | {'Predicted Rate':<20} | {'Max Time (s)':<15}
+{'-'*65}
+"""
+        for p in self.param_results['predictions']:
+            max_time_str = f"{p['max_time']:.6f}" if p['max_time'] != float('inf') else "∞"
+            table_text += f"atten-{p['atten_idx']:<6} | {p['thickness']:<12.2f} | {p['rate']:<20.6e} | {max_time_str:<15}\n"
+
+        table_text_widget = scrolledtext.ScrolledText(table_frame, font=('Courier', 9))
+        table_text_widget.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        table_text_widget.insert(tk.END, table_text)
+        table_text_widget.config(state=tk.DISABLED)
+
+        # Plot tab
+        plot_frame = ttk.Frame(notebook)
+        notebook.add(plot_frame, text="Regression Plot")
+
+        self._create_regression_plot(plot_frame)
+
+        # Button to close
+        close_button = ttk.Button(results_window, text="Close", command=results_window.destroy)
+        close_button.pack(pady=5)
+
+    def _create_regression_plot(self, parent):
+        """Create and display regression plot"""
+        try:
+            data_points = self.param_results['data_points']
+            fit = self.param_results['fit_results']
+
+            # Scatter data (actual measurements)
+            thicknesses = sorted(list(data_points.keys()))
+            avg_rates = [np.mean(data_points[t]) for t in thicknesses]
+
+            # Use Tkinter backend to avoid threading issues on macOS
+            plt.switch_backend('TkAgg')
+
+            # Create figure with explicit backend
+            fig, ax = plt.subplots(figsize=(8, 6), dpi=80)
+            fig.patch.set_facecolor('white')
+
+            # Plot scatter points
+            ax.scatter(thicknesses, avg_rates, color='blue', s=100, label='Measured Data', zorder=3)
+
+            # Regression line
+            if thicknesses:
+                x_fit = np.linspace(0, max(thicknesses) * 1.1, 100)
+                y_fit = fit['I0'] * np.exp(-fit['mu'] * x_fit)
+                ax.plot(x_fit, y_fit, 'r--', label='Fitted Curve', linewidth=2)
+
+            ax.set_xlabel('Cu Thickness (mm)', fontsize=12)
+            ax.set_ylabel('Intensity Rate (counts/s)', fontsize=12)
+            ax.set_title('Beer-Lambert Law Fit', fontsize=14, fontweight='bold')
+            ax.set_yscale('log')
+            ax.grid(True, alpha=0.3)
+            ax.legend(loc='best')
+            fig.tight_layout()
+
+            # Embed in Tkinter - this MUST be on main thread
+            canvas = FigureCanvasTkAgg(fig, parent)
+            canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+            canvas.draw()
+
+        except Exception as e:
+            error_label = ttk.Label(parent, text=f"Error creating plot: {str(e)}", foreground='red')
+            error_label.pack(padx=5, pady=5)
+
 
 def main():
     """Main application entry point"""

@@ -5,14 +5,17 @@ Handles all user interactions and data updates
 
 import json
 import os
-from dash import callback, Input, Output, State, ctx
+from dash import callback, Input, Output, State, ctx, html, dcc
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 import numpy as np
 import logging
 
+import dash_bootstrap_components as dbc
+
 from gui_dash.utils.image_processing import prepare_image_for_display
+from core.parameter_optimizer import ParameterOptimizer
 
 # Setup logging
 logging.basicConfig(level=logging.DEBUG)
@@ -84,8 +87,58 @@ def find_file_path(filename):
     return None
 
 
+def create_regression_plot(results):
+    """Create scatter plot with regression line from parameter analysis results"""
+    if not results or not results.get('success'):
+        return go.Figure()
+
+    data_points = results['data_points']
+    fit = results['fit_results']
+
+    # Scatter data (actual measurements)
+    thicknesses = list(data_points.keys())
+    avg_rates = [np.mean(rates) for rates in data_points.values()]
+
+    # Regression line
+    if thicknesses:
+        x_fit = np.linspace(0, max(thicknesses) * 1.1, 100)
+        y_fit = fit['I0'] * np.exp(-fit['mu'] * x_fit)
+    else:
+        x_fit = []
+        y_fit = []
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x=thicknesses, y=avg_rates,
+        mode='markers', name='Measured Data',
+        marker=dict(size=10, color='blue')
+    ))
+
+    if len(x_fit) > 0:
+        fig.add_trace(go.Scatter(
+            x=x_fit, y=y_fit,
+            mode='lines', name='Fitted Curve',
+            line=dict(color='red', dash='dash')
+        ))
+
+    fig.update_layout(
+        title='Beer-Lambert Law Fit',
+        xaxis_title='Cu Thickness (mm)',
+        yaxis_title='Intensity Rate (counts/s)',
+        yaxis_type='log',
+        hovermode='closest',
+        height=400
+    )
+
+    return fig
+
+
 def register_callbacks(app, data_handler, analysis_engine):
     """Register all Dash callbacks"""
+
+    # Initialize parameter optimizer
+    parameter_optimizer = ParameterOptimizer(logger=logger)
 
     # Callback 0: Handle file browse (search for file path)
     @callback(
@@ -433,6 +486,135 @@ def register_callbacks(app, data_handler, analysis_engine):
             traceback.print_exc()
             return f"Error: {str(e)}", go.Figure()
 
+    # Callback 8: Browse parameter directory
+    @callback(
+        Output('param-dir-input', 'value'),
+        Input('btn-browse-param-dir', 'n_clicks'),
+        prevent_initial_call=True
+    )
+    def browse_param_directory(n_clicks):
+        """Set default experiment data path"""
+        logger.debug("[CALLBACK 8] Browse parameter directory")
+        return "./experiment_data"
 
-# Import html for use in update_roi_list
-from dash import html
+    # Callback 9: Analyze parameter directory
+    @callback(
+        [Output('param-results-store', 'data'),
+         Output('param-modal', 'is_open', allow_duplicate=True),
+         Output('upload-status', 'children', allow_duplicate=True)],
+        Input('btn-get-parameters', 'n_clicks'),
+        State('param-dir-input', 'value'),
+        prevent_initial_call=True
+    )
+    def analyze_parameters(n_clicks, directory_path):
+        """Run parameter analysis on directory"""
+        logger.debug(f"[CALLBACK 9] Analyze parameters: {directory_path}")
+
+        if not directory_path:
+            return None, False, "Error: No directory specified"
+
+        if not os.path.isdir(directory_path):
+            return None, False, f"Error: Directory not found: {directory_path}"
+
+        try:
+            logger.info(f"Analyzing parameter directory: {directory_path}")
+            results = parameter_optimizer.analyze_directory(directory_path)
+
+            if not results['success']:
+                return None, False, f"Error: {results['error']}"
+
+            logger.info(f"Analysis complete: {len(results['predictions'])} predictions")
+            return results, True, f"Analysis complete: {len(results['predictions'])} predictions"
+
+        except Exception as e:
+            logger.error(f"Parameter analysis error: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return None, False, f"Error: {str(e)}"
+
+    # Callback 10: Populate modal content
+    @callback(
+        [Output('param-modal-summary', 'children'),
+         Output('param-modal-table', 'children'),
+         Output('param-modal-plot', 'children')],
+        Input('param-results-store', 'data'),
+        prevent_initial_call=True
+    )
+    def update_param_modal_content(results):
+        """Render modal content from analysis results"""
+        logger.debug("[CALLBACK 10] Update parameter modal content")
+
+        if not results or not results.get('success'):
+            return "No data", "", go.Figure()
+
+        fit = results['fit_results']
+
+        # Summary section
+        summary = dbc.Alert(
+            [
+                html.H5("Fitted Parameters:", className="alert-heading"),
+                html.P(
+                    [
+                        html.Strong("Attenuation Coefficient (μ): "),
+                        f"{fit['mu']:.4f} mm⁻¹", html.Br(),
+                        html.Strong("Unattenuated Flux (I₀): "),
+                        f"{fit['I0']:.2e} counts/s", html.Br(),
+                        html.Strong("R² (Goodness of Fit): "),
+                        f"{fit['r_squared']:.4f}"
+                    ]
+                ),
+            ],
+            color="info"
+        )
+
+        # Table section
+        predictions = results['predictions']
+        table = dbc.Table(
+            [
+                html.Thead(
+                    html.Tr(
+                        [
+                            html.Th("Atten Index"),
+                            html.Th("Thickness (mm)"),
+                            html.Th("Predicted Rate (cts/s)"),
+                            html.Th("Max Exposure Time (s)")
+                        ]
+                    )
+                ),
+                html.Tbody(
+                    [
+                        html.Tr(
+                            [
+                                html.Td(f"atten-{p['atten_idx']}"),
+                                html.Td(f"{p['thickness']:.2f}"),
+                                html.Td(f"{p['rate']:.2e}"),
+                                html.Td(f"{p['max_time']:.4f}" if p['max_time'] != float('inf') else "∞")
+                            ]
+                        )
+                        for p in predictions
+                    ]
+                )
+            ],
+            bordered=True,
+            hover=True,
+            striped=True,
+            responsive=True,
+            size='sm'
+        )
+
+        # Plot section
+        fig = create_regression_plot(results)
+        plot = dcc.Graph(figure=fig, style={'height': '400px'})
+
+        return summary, table, plot
+
+    # Callback 11: Close parameter modal
+    @callback(
+        Output('param-modal', 'is_open', allow_duplicate=True),
+        Input('btn-close-param-modal', 'n_clicks'),
+        prevent_initial_call=True
+    )
+    def close_param_modal(n_clicks):
+        """Close the parameter modal"""
+        logger.debug("[CALLBACK 11] Close parameter modal")
+        return False

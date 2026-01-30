@@ -71,6 +71,63 @@ def create_layout():
                                 className="mb-3"
                             ),
 
+                            # Parameter Recommendation Section
+                            dbc.Card(
+                                [
+                                    dbc.CardHeader("Parameter Recommendation"),
+                                    dbc.CardBody(
+                                        [
+                                            dbc.Label("Experiment Data Directory:", className="fw-bold"),
+                                            dbc.Row(
+                                                [
+                                                    dbc.Col(
+                                                        [
+                                                            dbc.Input(
+                                                                id='param-dir-input',
+                                                                type='text',
+                                                                placeholder='e.g., ./experiment_data',
+                                                                className="mb-2"
+                                                            ),
+                                                        ],
+                                                        width=9
+                                                    ),
+                                                    dbc.Col(
+                                                        [
+                                                            dbc.Button(
+                                                                "Browse",
+                                                                id='btn-browse-param-dir',
+                                                                color='secondary',
+                                                                outline=True,
+                                                                size='sm',
+                                                                className="w-100"
+                                                            ),
+                                                        ],
+                                                        width=3
+                                                    ),
+                                                ]
+                                            ),
+                                            dcc.Loading(
+                                                id="param-loading",
+                                                type="default",
+                                                children=[
+                                                    dbc.Button(
+                                                        "Get Parameters",
+                                                        id='btn-get-parameters',
+                                                        color='success',
+                                                        className="w-100 mb-2"
+                                                    ),
+                                                ]
+                                            ),
+                                            html.Small(
+                                                "Analyzes folders: sample_atten-X_t-Y",
+                                                className="text-muted"
+                                            ),
+                                        ]
+                                    ),
+                                ],
+                                className="mb-3"
+                            ),
+
                             # Parameters Section
                             dbc.Card(
                                 [
@@ -293,5 +350,28 @@ def create_layout():
             dcc.Store(id='data-store', data=None),
             dcc.Store(id='current-frame-idx', data=0),
             dcc.Store(id='rois-store', data=[]),
+            dcc.Store(id='param-results-store', data=None),
+
+            # Parameter Recommendation Modal
+            dbc.Modal(
+                [
+                    dbc.ModalHeader(dbc.ModalTitle("Parameter Recommendations")),
+                    dbc.ModalBody(
+                        [
+                            html.Div(id='param-modal-summary', className="mb-3"),
+                            html.Div(id='param-modal-table', className="mb-3"),
+                            html.Div(id='param-modal-plot'),
+                        ]
+                    ),
+                    dbc.ModalFooter(
+                        [
+                            dbc.Button("Close", id='btn-close-param-modal', color='primary'),
+                        ]
+                    ),
+                ],
+                id='param-modal',
+                size='xl',
+                is_open=False,
+            ),
         ]
     )
