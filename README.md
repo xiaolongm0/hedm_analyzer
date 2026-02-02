@@ -2,6 +2,10 @@
 
 A comprehensive Python application for analyzing High Energy Diffraction Microscopy (HEDM) X-ray detector data with statistical analysis, ROI management, and scan parameter optimization.
 
+**Available in two GUI versions:**
+- **Desktop GUI** (Tkinter) - Standalone desktop application with interactive image viewer
+- **Web GUI** (Dash) - Browser-based interface for remote access and easier deployment
+
 ![GUI](./figs/gui_screen.png)
 
 ## Features
@@ -24,35 +28,99 @@ A comprehensive Python application for analyzing High Energy Diffraction Microsc
 ## Installation
 
 ### Requirements
+
+All dependencies are listed in `requirements.txt`. Install them with:
+
 ```bash
-pip install numpy scipy pillow h5py matplotlib scikit-image
+pip install -r requirements.txt
 ```
 
-See `requirements.txt` for detailed version requirements.
+### Key Dependencies
+- **Core**: NumPy, SciPy, Pillow, h5py, scikit-image
+- **Desktop GUI**: Tkinter (usually included with Python)
+- **Web GUI**: Dash, Dash Bootstrap Components, Plotly
+- **Visualization**: Matplotlib
 
 ### Setup
+
+#### Option 1: Desktop GUI (Tkinter)
 ```bash
 cd hedm_analyzer
 python3 main.py
 ```
+The Tkinter interface will launch as a desktop application.
+
+#### Option 2: Web GUI (Dash)
+```bash
+cd hedm_analyzer
+python3 main_dash.py
+```
+The web application will be available at `http://localhost:8050` - open this URL in your web browser.
 
 ## Usage
 
-### GUI Application
-The main interface provides:
-1. **Data Input Panel**: Load HDF5 files or image sequences
-2. **Parameter Controls**: Set threshold, saturation limits, and scan conditions
-3. **ROI Management**: Interactive region selection on image viewer
-4. **Analysis Controls**: Run analysis and export results
-5. **Visualization**: Real-time histograms and statistical plots
-
-### Basic Workflow
+### Common Workflow
+Both GUI versions follow the same basic workflow:
 1. Load data (HDF5 file or image sequence)
 2. Set analysis parameters (threshold, saturation limit)
-3. Define ROIs by clicking and dragging on images
-4. Configure scan conditions (X-ray energy, exposure time)
+3. Define ROIs (Region of Interest)
+4. Configure scan conditions (X-ray energy, exposure time, filters)
 5. Run analysis to generate comprehensive report
-6. Export results to JSON/CSV formats
+6. Export results and view recommendations
+
+### Desktop GUI (Tkinter)
+The desktop interface provides:
+1. **Data Input Panel**: Load HDF5 files or image sequences
+2. **Parameter Controls**: Set threshold, saturation limits, and scan conditions
+3. **Interactive Image Viewer**:
+   - Click and drag to define ROIs directly on images
+   - Zoom and pan controls
+   - Saturation highlighting
+4. **Real-time Visualization**: Histograms and statistical plots
+5. **Export Tools**: Save results to JSON/CSV formats
+
+**Starting the Desktop GUI:**
+```bash
+python3 main.py
+```
+
+### Web GUI (Dash)
+The web interface provides:
+1. **File Upload/Browse**: Upload HDF5 files directly or specify file paths
+2. **Interactive Controls**: Web forms for all analysis parameters
+3. **Parameter Recommendation**: Automated exposure time and filter optimization
+4. **Web-based Visualization**: Plotly-based interactive charts and plots
+5. **Remote Access**: Access from any browser on the network
+6. **Export Functionality**: Download analysis results and recommendations
+
+**Starting the Web GUI:**
+```bash
+python3 main_dash.py
+```
+Then navigate to `http://localhost:8050` in your web browser.
+
+**For Remote Access:**
+If running on a remote server, use port forwarding:
+```bash
+ssh -L 8050:localhost:8050 user@remote_server
+```
+Then access at `http://localhost:8050`
+
+### Choosing a GUI
+
+| Feature | Desktop GUI (Tkinter) | Web GUI (Dash) |
+|---------|-------------------|----------|
+| **Access** | Local only | Network/Remote access |
+| **ROI Selection** | Click-and-drag on image | Web form input |
+| **Visualization** | Matplotlib plots | Interactive Plotly charts |
+| **File Upload** | Browse local filesystem | Upload or path input |
+| **Installation** | Minimal (Tkinter often pre-installed) | Requires Dash/Flask packages |
+| **Performance** | Direct native rendering | Browser-based |
+| **Use Case** | Local analysis, interactive ROI selection | Remote servers, shared analysis |
+
+**Quick Decision:**
+- Choose **Desktop GUI** if you prefer direct mouse interaction with images and local analysis
+- Choose **Web GUI** if you need remote access or prefer a modern web interface
 
 ### Input Parameters
 - **File Input**: HDF5 files (`*.h5`) or image directories
@@ -99,11 +167,23 @@ Expected structure following NeXus/TomoPy conventions:
 - Exposure time recommendations
 - Filter optimization suggestions
 
-### GUI (`gui/main_window.py`)
-- Tkinter-based interface
-- Interactive image viewer with ROI selection
-- Real-time analysis visualization
-- Results export functionality
+### GUI Components
+
+#### Desktop GUI (`gui/main_window.py`)
+- Tkinter-based desktop interface
+- Interactive image viewer with ROI selection and saturation highlighting
+- Real-time histograms and statistical visualization
+- Direct file browsing and results export
+- Suitable for local analysis with direct display
+
+#### Web GUI (`gui_dash/`)
+- Dash/Flask-based web server with Bootstrap styling
+- File upload support (up to 1GB)
+- Interactive web forms for all parameters
+- Plotly-based interactive charts and visualization
+- Parameter recommendation engine integration
+- Remote access via web browser
+- Suitable for remote servers or shared deployments
 
 ## Example Analysis Report
 
@@ -153,7 +233,17 @@ python3 quick_test.py          # Quick functionality test
 
 ## Limitations
 
-- GUI requires display (X11/Wayland) - use SSH with X forwarding for remote access
+### Desktop GUI (Tkinter)
+- Requires display server (X11/Wayland) - use SSH with X forwarding for remote access
+- Limited to local network access
+- Interactive ROI selection requires direct mouse input
+
+### Web GUI (Dash)
+- Single-user deployment (not optimized for concurrent users)
+- Large file uploads may take time on slower connections
+- Browser compatibility depends on Plotly support
+
+### General
 - Large datasets (>100 frames) may require significant memory
 - Real-time EPICS PV support is planned but not yet implemented
 
@@ -163,16 +253,19 @@ python3 quick_test.py          # Quick functionality test
 - Advanced filtering and noise reduction
 - 3D visualization capabilities
 - Batch processing scripts
-- Web-based interface option
+- Multi-user web interface with authentication
+- Docker containerization for easier deployment
 
 ## Technical Details
 
 - **Language**: Python 3.7+
-- **GUI Framework**: Tkinter
+- **Desktop GUI Framework**: Tkinter
+- **Web GUI Framework**: Dash with Flask backend
+- **Styling**: Dash Bootstrap Components
 - **Scientific Computing**: NumPy, SciPy
 - **Image Processing**: PIL/Pillow, scikit-image
 - **Data I/O**: HDF5py
-- **Visualization**: Matplotlib
+- **Visualization**: Matplotlib (desktop), Plotly (web)
 
 ## License
 
